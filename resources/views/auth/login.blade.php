@@ -2,6 +2,7 @@
 
 @section('inner')
 <div class="container">
+
     <form method="POST" action="/auth/register">
         {!! csrf_field() !!}
         <div>
