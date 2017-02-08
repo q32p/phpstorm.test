@@ -1,0 +1,963 @@
+$grids: (
+  // suffix, media, container width, media for classes: visible, hidden
+                ('', all ),
+                ('-sm', (max-width: 991px), 768px, '(min-width: 768px)and(max-width: 992px)' ),
+                ('-xs', (max-width: 767px), 640px ),
+                ('-xv', (max-width: 639px), 480px ),
+                ('-xm', (max-width: 479px), 360px ),
+                ('-mm', (max-width: 359px), 320px ),
+                ('-md', (min-width: 992px), 970px, '(min-width: 992px)and(max-width: 1200px)'  ),
+                ('-lg', (min-width: 1200px), 1170px ),
+                ('-ll', (min-width: 1600px), 1570px )
+
+  //,('-print', print )
+);
+
+$prefixes: ( '-o-', '-ms-', '-moz-', '-webkit-' );
+
+
+@mixin echo($values,$prefix: false){
+  @each $k, $v in $values {
+    @if $prefix {  #{$prefix + $k}: $v; }
+    #{$k}: $v;
+  }
+}
+
+@function cross($name,$value:''){
+  $result: ();
+  @each $prefix in $prefixes { $result: map-merge($result, ($prefix + $name : $value)); }
+  @return map-merge($result, ($name : $value));
+}
+
+
+@mixin duration($sec: 0.25s){
+  @include echo(cross(transition-duration,$sec));
+}
+@mixin property($value){
+  @include echo(cross(transition-property,$value));
+}
+@mixin delay($value){
+  @include echo(cross(transition-delay,$value));
+}
+@mixin filter($value){
+  @include echo(cross(filter,$value));
+}
+@mixin opacity($value){
+  filter:Alpha(Opacity=($value * 100));
+  @include echo(cross(opacity,$value));
+}
+@mixin trans($x:0%,$y:0%){
+  @include echo(cross(transform,translate($x,$y)));
+}
+@mixin mixf($name, $func, $value){
+  @each $prefix in $prefixes { #{$name}: #{$prefix + $func + '(' + $value + ')'}; }
+  #{$name}: #{$func + '(' + $value + ')'};
+}
+@mixin side($name,$suffix,$prop,$value){
+  #{$name}#{$suffix} {
+    #{$prop} : $value;
+  }
+  #{$name}v#{$suffix} {
+    #{$prop}-top : $value;
+    #{$prop}-bottom : $value;
+  }
+  #{$name}h#{$suffix} {
+    #{$prop}-left : $value;
+    #{$prop}-right : $value;
+  }
+
+  #{$name}t#{$suffix} {
+    #{$prop}-top : $value;
+  }
+  #{$name}b#{$suffix} {
+    #{$prop}-bottom : $value;
+  }
+  #{$name}l#{$suffix} {
+    #{$prop}-left : $value;
+  }
+  #{$name}r#{$suffix} {
+    #{$prop}-right : $value;
+  }
+}
+@mixin side-focus($name,$prop,$value,$sub:''){
+  #{$name}, #{$name + '-h:hover'}, #{$name + '-h:focus'} {
+    #{$prop}#{$sub} : $value;
+  }
+  #{$name}v, #{$name + 'v-h:hover'}, #{$name + 'v-h:focus'} {
+    #{$prop}-top#{$sub} : $value;
+    #{$prop}-bottom#{$sub} : $value;
+  }
+  #{$name}h, #{$name + 'h-h:hover'}, #{$name + 'h-h:focus'} {
+    #{$prop}-left#{$sub} : $value;
+    #{$prop}-right#{$sub} : $value;
+  }
+  #{$name}t, #{$name + 't-h:hover'}, #{$name + 't-h:focus'} {
+    #{$prop}-top#{$sub} : $value;
+  }
+  #{$name}b, #{$name + 'b-h:hover'}, #{$name + 'b-h:focus'} {
+    #{$prop}-bottom#{$sub} : $value;
+  }
+  #{$name}l, #{$name + 'l-h:hover'}, #{$name + 'l-h:focus'} {
+    #{$prop}-left#{$sub} : $value;
+  }
+  #{$name}r, #{$name + 'r-h:hover'}, #{$name + 'r-h:focus'} {
+    #{$prop}-right#{$sub} : $value;
+  }
+}
+
+@mixin distance($name,$suffix,$value){
+  #{$name}t#{$suffix} {
+    top : $value;
+  }
+  #{$name}b#{$suffix} {
+    bottom : $value;
+  }
+  #{$name}l#{$suffix} {
+    left : $value;
+  }
+  #{$name}r#{$suffix} {
+    right : $value;
+  }
+}
+
+@mixin row($size){
+  margin-left:-$size + px;
+  margin-right:-$size + px;
+  &,&>*{
+    &>[class*='col-']{
+      padding-left: $size + px;
+      padding-right: $size + px;
+    }
+  }
+}
+@mixin padding-h($size){
+  padding-left: $size + px;
+  padding-right: $size + px;
+  @content
+}
+@mixin clearfix(){
+  &:before,&:after{
+    content: " ";
+    clear: both;
+    display: table;
+  }
+  @content
+}
+
+
+@mixin bg($index){ .bg#{$index}, .bg#{$index}-h:hover{ @content } }
+
+
+@mixin radial($value){ @include mixf(background, radial-gradient, $value); }
+@mixin linear($value){ @include mixf(background, linear-gradient, $value); }
+@mixin as($value){ @include echo( cross(appearance,$value) ); }
+@mixin placeholder(){ &::-webkit-input-placeholder, &:-moz-placeholder{ @content } }
+@mixin all(){ &,&:active,&:hover,&:visited,&:focus{ @content } }
+@mixin scale($value: 1.2){ @include echo( cross(transform, scale($value)) ); }
+
+@mixin keyframes($name) {
+  @-o-keyframes #{$name} { @content; }
+  @-moz-keyframes #{$name} { @content; }
+  @-webkit-keyframes #{$name} { @content; }
+  @keyframes #{$name} { @content; }
+}
+
+@include keyframes(spinner-animate){
+  from { @include echo( cross(transform, rotateZ(0deg)) ); }
+  to { @include echo( cross(transform, rotateZ(360deg)) ); }
+}
+
+.rotation{
+  @include echo( cross(animation, spinner-animate 3s infinite linear) );
+  position:relative;
+}
+.fa-spinner{
+  @extend .rotation;
+  top: 1px;
+}
+.glyphicon-refresh.active{
+  @extend .rotation;
+}
+
+@each $size in 50, 80, 100 {
+  #{'.scale' + $size}{ @include echo( cross( transform, scale(.01 * $size) ) ); }
+}
+
+@include keyframes(ball-animate){
+  0% { @include echo( cross( transform, scale(.7) ) ); @include opacity(.8); }
+  25% { @include echo( cross( transform, scale(1.2) ) ); @include opacity(1); }
+  50% { @include echo( cross( transform, scale(.7) ) ); @include opacity(.8); }
+  75% { @include echo( cross( transform, scale(.7) ) ); @include opacity(.6); }
+  100% { @include echo( cross( transform, scale(.7) ) ); @include opacity(.4); }
+}
+
+.loading-icons{
+  &>*{
+    @include echo( cross(animation, ball-animate 1s infinite linear) );
+    border-radius: 100%;
+    position: relative;
+    display: block;
+    width: 15px;
+    height: 15px;
+    background-color: #877683;
+    float: left;
+    width: 13px;
+    height: 13px;
+    top: 1px;
+    margin-right: 4px;
+    &:last-child{ margin-right: 0px; }
+    &:nth-child(2){ @include echo( cross(animation-delay, .25s) ); }
+    &:nth-child(3){ @include echo( cross(animation-delay, .5s) ); }
+  }
+}
+
+.noWrap{white-space: nowrap;}
+.break{ @include echo(cross(word-break,break-word)); }
+.justify{text-align:justify;}
+
+//.shadow1{
+//  @include echo( cross(box-shadow,inset 0px 0px 10px 5px rgba(0, 0, 0, .15)) );
+//}
+//
+//rotate x
+@each $v in 180
+{ .rot#{$v}x, .rot#{$v}x-h:hover{ @include echo( cross(transform, rotateX( $v + deg )) ); } }
+//rotate y
+@each $v in 90
+{ .rot#{$v}y, .rot#{$v}y-h:hover{ @include echo( cross(transform, rotateY( $v + deg )) ); } }
+//rotate z
+@each $v in -90, -45, 0, 45, 90
+{ .rot#{$v}z, .rot#{$v}z-h:hover{ @include echo( cross(transform, rotateZ( $v + deg )) ); } }
+
+
+%none{ display:none; }
+%block{ display:block;}
+%cell{
+  float:none;
+  display:table-cell;
+  vertical-align:middle;
+}
+%tbl{ display:table; &>*{ @extend %cell; }}
+
+*, *:before, *:after{ @include echo( cross(box-sizing, border-box) ); }
+
+x{ @extend %block;}
+xs{color: #F00;}
+img{
+  border:0;
+  vertical-align: middle;
+  max-width: 100%;
+}
+
+textarea{
+  @include echo( cross(resize,vertical) );
+  max-width: 100%;
+}
+label{
+  @extend %block;
+  font-weight: inherit;
+  margin: 0px;
+  padding: 0px;
+}
+iframe,video{ @extend %block; }
+
+
+.mixInput:not(input),.mix-btn:not(button){ @extend %tbl; }
+
+.noOutline{outline:none;}
+
+.noSelect{ @include echo( cross(user-select, none) ); }
+.select{ @include echo( cross(user-select, initial) ); }
+.noEvent{ @include echo( cross(pointer-events, none) ); }
+.event{ @include echo( cross(pointer-events, auto) ); }
+
+.overline{text-decoration: overline;}
+.middline{text-decoration: line-through;}
+.underline{text-decoration: underline;}
+.noneline{text-decoration: none;}
+
+.pointer{cursor: pointer;}
+.move{cursor: move;}
+.notAllowed{cursor: not-allowed;}
+
+.overlay{
+  position: absolute;
+  display: block;
+  top:0px;left:0px;right:0px;bottom:0px;
+}
+
+
+.duration, .duration250{ @include duration(.25s); }
+.duration500{ @include duration(.5s); }
+.duration1000{ @include duration(1s); }
+.noDuration{ @include duration(.0s !important); }
+
+
+.overflow{overflow:hidden;}
+.overflowX{overflow-x:hidden;}
+.overflowY{overflow-y:hidden;}
+.scrollX{overflow-x:scroll;}
+.scrollY{overflow-y:scroll;}
+.autoX{overflow-x:auto;}
+.autoY{overflow-y:auto;}
+
+.dotted,.dashed,.solid{border-width:0px;}
+.dotted{border-style: dotted;}
+.dashed{border-style: dashed;}
+.solid{border-style: solid;}
+
+
+//opacity
+.o,.o-h:hover{ @include opacity(0); }
+.no-o,.no-o-h:hover{ @include opacity(1); }
+@each $size in 50, 70, 90 {
+  #{'.o' + $size}, #{'.o' + $size + '-h:hover'} { @include opacity( 0.01 * $size ); }
+}
+
+
+%hide{
+  @include duration(.25s);
+  @include echo( cross(pointer-events, none) );
+  @include opacity(0);
+  z-index:-1;
+}
+%show{
+  @include duration(.25s);
+  @include echo( cross(pointer-events, auto) );
+  @include opacity(1);
+  z-index:1;
+}
+
+
+
+.mixBtn{
+  @extend .noSelect;
+  &, &>*{ @extend .duration; }
+
+  display: block;
+  cursor: pointer;
+  text-align: center;
+  text-decoration:none;
+  overflow: hidden;
+  padding: 0px;
+  border: solid 1px transparent;
+  position: relative;
+  &[disabled]{
+    @extend .o70;
+    cursor: not-allowed;
+  }
+}
+
+
+.mixInput{
+  @extend .duration;
+  @include placeholder(){ color:#878787; };
+  outline: none;
+  display: block;
+  padding: 0px;
+  border: solid 1px transparent;
+}
+
+
+
+.viewFake{
+  display: none;
+  &.none-fake{display:block;}
+}
+
+
+//background color
+@include bg(1){background-color:#FFF;}
+@include bg(2){background-color:#000;}
+
+.no-bg{background-color:transparent;}
+
+.lv{ @include linear( (to bottom, rgba(255,255,255,0.3) 0%, rgba(0,0,0,0.0) 100%) ); }
+.blur{ @include echo( cross( filter, blur(4px) ) ); }
+
+
+//z-index
+.back{z-index:-1;}
+.front{z-index:1;}
+@each $size in 1, 2 { #{'.z' + $size} { z-index:$size; } }
+
+
+//border-radius
+.r{border-radius:100%;};
+@each $size in 3, 5 { #{'.r' + $size} { border-radius:$size + px; } }
+
+
+//border
+@each $key, $value in
+                (1, solid 1px #eee)
+{ @include side-focus('.b' + $key, border, $value); }
+
+
+//border-width
+@each $size in 1, 2
+{ @include side-focus('.bw1', border, $size, '-width'); }
+
+.b-h:hover{border-color: transparent;}
+.b:not(:hover){border-color: transparent;}
+.no-b{border-color: transparent;}
+
+
+.repeat{background-repeat: repeat;}
+
+
+//line-height
+@each $size in 11, 12, 13 { #{'.lhx' + $size} { &, &>*{ line-height: 0.1 * $size; } } }
+
+
+.mixHide{
+  @extend %hide;
+}
+.mixShow, .mixHide.mixShow{
+  @extend %show;
+}
+
+
+
+//position
+.relative{position:relative;}
+.absolute{position:absolute;}
+.static{position:static;}
+.st{ @extend .absolute; top:0px; left:0px; right:0px;}
+.sb{ @extend .absolute; bottom:0px; left:0px; right:0px;}
+.sl{ @extend .absolute; top:0px; left:0px; bottom:0px;}
+.sr{ @extend .absolute; top:0px; right:0px; bottom:0px;}
+.fixed{position:fixed;}
+
+
+
+// to side translate
+.middle-t{ @include trans(0%,0%);};
+.st-t{ @include trans(0%,-100%);}
+.sb-t{ @include trans(0%,100%);}
+.sl-t{ @include trans(-100%,0%);}
+.sr-t{ @include trans(100%,0%);}
+
+@each $indent in 5 {
+  .st#{$indent}x-t{ @include trans(0%, -$indent + px);}
+  .sb#{$indent}x-t{ @include trans(0%, $indent + px);}
+  .sl#{$indent}x-t{ @include trans(-$indent + px, 0%);}
+  .sr#{$indent}x-t{ @include trans($indent + px, 0%);}
+}
+@each $percent in 50 {
+  .st#{$percent}-t{ @include trans(0%, -$percent + %);}
+  .sl#{$percent}-t{ @include trans(-$percent + %, 0%);}
+}
+
+html{
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  min-height: 100%;
+}
+
+body{
+  @extend .break;
+  margin: 0;
+  font-family: Helvetica, Arial, sans-serif;
+  line-height: 1.42857143;
+  background-repeat: repeat;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  min-height: 100%;
+  font-size: 14px;
+  font-weight: normal;
+  color:#7e6c75;
+  text-align: left;
+  background-color: #FFF;
+  &>.inner{
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 460px;
+  }
+  &>.overlay{
+    @extend .noEvent;
+    z-index:-1;
+  }
+}
+
+main{min-height: 200px;}
+
+
+p{margin-bottom: 5px;}
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: inherit;
+  font-weight: inherit;
+  font-size: inherit;
+  margin: 0px;
+  line-height: inherit;
+  color: inherit;
+}
+
+a{
+  @extend .duration;
+  @include all(){
+    text-decoration: none;
+    color: inherit; outline: none; cursor: pointer;
+  }
+  .img &, &.img{ display: block; }
+}
+
+.content{
+  a:hover{ @extend .underline; }
+  h1,h2,h3,h4,h5,h6,p{margin-bottom:20px;}
+  ul{
+    margin-bottom:20px;
+    li{
+      margin-bottom:10px;
+    }
+  }
+}
+
+.mixCol{
+  min-height: 1px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.container{
+  @extend .ct;
+  @include padding-h(15);
+}
+
+@each $suffix, $media, $container, $additional in $grids {
+  //begin
+
+  .visible#{$suffix}{ @extend %none; }
+
+  $i: 12;
+  @while $i > 0 {
+    .col#{$suffix}-#{$i}{ @extend .mixCol; }
+    $i: $i - 1;
+  }
+  @media #{$media} {
+    $i: 12;
+    @while $i > 0 {
+      .col#{$suffix}-#{$i}{
+        @extend .lt#{$suffix};
+        width: 100 * $i / 12  + %;
+      }
+      $i: $i - 1;
+    }
+
+
+    .clear#{$suffix}, .clearfix#{$suffix}{ @include clearfix(); }
+
+    //row
+    @each $size in 0, 2, 5, 10, 15
+    { #{'.row' + $size + $suffix} { @extend .clearfix#{$suffix}; @include row($size); } }
+
+
+    @if $suffix == '' {
+      .row{ @extend .row15; }
+    }
+
+    @if $container { .container{ width:$container; } }
+
+
+    @if $suffix == '-xs' {
+      .container{ @include padding-h(10); }
+      .row{ @extend .row10-xs; }
+    }
+
+
+
+    .tbl#{$suffix}{ display:table; &>*{ float:none !important; display:table-cell; vertical-align:middle; } }
+    .vc#{$suffix}{&, & td, &.tbl>*, &[class*='tbl-']>*{vertical-align:middle;}}
+    .vt#{$suffix}{&, & td, &.tbl>*, &[class*='tbl-']>*{vertical-align:top;}}
+    .vb#{$suffix}{&, & td, &.tbl>*, &[class*='tbl-']>*{vertical-align:bottom;}}
+    .tl#{$suffix}{text-align:left;}
+    .tc#{$suffix}{text-align:center;}
+    .tr#{$suffix}{text-align:right;}
+    .lt#{$suffix}{float:left;}
+    .ct#{$suffix}{margin-left:auto;margin-right:auto;}
+    .rt#{$suffix}{float:right;}
+
+
+    .inbox#{$suffix}{display:inline-block;}
+    .inline#{$suffix}{display:inline;}
+    .overflow#{$suffix}{overflow:hidden;}
+    .block#{$suffix}{display:block; &.tbl, &[class*='tbl-']{&, &>*{display:block;}}}
+    .italic#{$suffix}{font-style:italic;}
+    .wt9#{$suffix}{font-weight:900;}
+    .wt8#{$suffix}{font-weight:800;}
+    .wt7#{$suffix}{font-weight:700;}
+    .wt6#{$suffix}{font-weight:600;}
+    .wt5#{$suffix}{font-weight:500;}
+    .wt4#{$suffix}{font-weight:400;}
+    .wt3#{$suffix}{font-weight:300;}
+    .wt2#{$suffix}{font-weight:200;}
+    .wt1#{$suffix}{font-weight:100;}
+
+    .uppercase#{$suffix}{text-transform:uppercase;}
+    .align#{$suffix}{
+      &>*{
+        text-align:center; &>*{margin:auto;}
+        &:last-child{text-align:right ;&>*{float:right;}}
+        &:first-child{text-align:left; &>*{float:left;}}
+      }
+    }
+
+
+    //font-size
+    @each $size in 10, 11, 12, 14, 16, 17, 18, 20, 22, 24, 26, 30, 36
+    { #{'.f' + $size + $suffix} { font-size:$size + px; } }
+
+    //padding
+    @each $size in 0, 5, 10, 15, 20, 30, 35, 40, 50
+    { @include side('.pd' + $size, $suffix, padding, $size + px); }
+
+    //margin
+    @each $size in 5, 10, 15, 20, 30, 35, 40, 50
+    { @include side('.mg' + $size, $suffix, margin, $size + px); }
+
+    //positions by sides
+    @each $size in 1, 2, 4, 15
+    { @include distance('.d' + $size, $suffix, $size + px); }
+
+
+    #{'.w' +  $suffix} { width: 100%; }
+    #{'.min-w' + $suffix} { min-width: 100%; }
+    #{'.max-w' + $suffix} { max-width: 100%; }
+    @each $size in 50, 200 {
+      #{'.w' + $size + $suffix} { width:$size + px; }
+      #{'.min-w' + $size + $suffix} { min-width:$size + px; }
+      #{'.max-w' + $size + $suffix} { max-width:$size + px; }
+    }
+
+    #{'.h' +  $suffix} { height: 100%; }
+    #{'.min-h' + $suffix} { min-height: 100%; }
+    #{'.max-h' + $suffix} { max-height: 100%; }
+    @each $size in 34, 40, 50, 60, 100 {
+      #{'.h' + $size + $suffix} { height:$size + px; }
+      #{'.min-h' + $size + $suffix} { min-height:$size + px; }
+      #{'.max-h' + $size + $suffix} { max-height:$size + px; }
+    }
+
+    @if not $additional {
+      .visible#{$suffix}{display:block !important;}
+      .hidden#{$suffix}{display:none !important;}
+    }
+  }
+
+  @if $additional {
+    @media #{$additional} {
+      .visible#{$suffix}{display:block !important;}
+      .hidden#{$suffix}{display:none !important;}
+    }
+  }
+
+
+
+  //end
+}
+
+
+.glyphicon-chevron-down,.chevron-down,
+.glyphicon-chevron-up,.chevron-up{
+  @extend .duration;
+  display:inline-block;
+  position:relative;
+  &.active{
+    @extend .rot180x;
+  }
+}
+.glyphicon-chevron-left,.glyphicon-chevron-right{
+  @extend .duration;
+}
+
+.mix-chevron:hover{
+  .glyphicon-chevron-left{
+    @extend .sl5x-t;
+  }
+  .glyphicon-chevron-right{
+    @extend .sr5x-t;
+  }
+}
+
+
+//.mixBurger{
+//  @extend %tbl;
+//  position:relative;
+//  z-index:5;
+//  cursor:pointer;
+//  height:33px;
+//  width:38px;
+//  &>*{
+//    text-align:center;
+//    &>*{
+//      display:block;
+//      width:100%;
+//      position:relative;
+//      top:-2px;
+//      height:0px;
+//      &>*{
+//        @extend .duration;
+//        position:absolute;
+//        margin:auto;
+//        display:block;
+//        background-color:#9a9a9a;
+//        width:100%;
+//        height:5px;
+//        &:nth-child(1){top:-14px;}
+//        &:nth-child(2){top:0px;}
+//        &:nth-child(3){top:14px;}
+//      }
+//    }
+//  }
+//}
+//
+//.owl-carousel{
+//  overflow:hidden;
+//  &>.owl-controls{
+//    &>.owl-nav{
+//      position:absolute;
+//      top:50%;
+//      left:0px;
+//      right:0px;
+//      &>.owl-prev,&>.owl-next{
+//        @extend .st50-t;
+//        @extend %tbl;
+//        position:absolute;
+//        font-size:30px;
+//        line-height:30px;
+//        width:60px;
+//        height:60px;
+//        &>i{
+//          &:before{
+//            @extend .duration;
+//            @extend .no-o;
+//            display:block;
+//          }
+//        }
+//        &:hover{
+//          &>i{
+//            &:before{
+//              @extend .no-o;
+//              @include echo( cross(text-shadow,(0px 0px 10px #FFF, 0px 0px 10px #FFF)) );
+//            }
+//          }
+//        }
+//      }
+//      $dist:10px;
+//      $indent:15px;
+//      &>.owl-prev{
+//        text-align: left;
+//        left: $indent;
+//        &:hover{
+//          &>i{
+//            &:before{
+//              transform:translate(-$dist, 0px);
+//            }
+//          }
+//        }
+//      }
+//      &>.owl-next{
+//        text-align: right;
+//        right: $indent;
+//        &:hover{
+//          &>i{
+//            &:before{
+//              transform:translate($dist, 0px);
+//            }
+//          }
+//        }
+//      }
+//    }
+//    &>.owl-dots{
+//      $size: 15px;
+//      display:block;
+//      position:absolute;
+//      left:0px;
+//      right:0px;
+//      bottom:10px;
+//      margin:auto;
+//      text-align:center;
+//      .owl-dot{
+//        @extend .duration;
+//        @extend .o50;
+//        margin-right:10px;
+//        display:inline-block;
+//        width: $size;
+//        height: $size;
+//        background-color:#000;
+//        border-radius:100px;
+//        &:last-child{
+//          margin-right:0px;
+//        }
+//        &:hover{
+//          @extend .o70;
+//        }
+//        &.active{
+//          @extend .no-o;
+//        }
+//      }
+//    }
+//  }
+//}
+
+form:hover{
+  input, textarea, select{
+    &[required], &[dl-required]{
+      &.ng-invalid{border-color:#F00;}
+    }
+  }
+  oi-select{
+    &[required], &[dl-required]{
+      &.ng-invalid{
+        .select-search{border-color:#F00;}
+      }
+    }
+  }
+}
+
+
+.mixUl{
+  display:block;
+  position:relative;
+  margin:0px;
+  padding:0px;
+}
+.mixNav{
+  ul{
+    @extend .mixUl;
+    @extend .clearfix;
+    &>li{position:relative;display:block;}
+  }
+  &.horiz>ul>li{float:left;}
+}
+.liInner{
+  @extend .duration;
+  width: 100%;
+  display: block;
+  position: relative;
+  overflow: hidden;
+  &>ul{
+    position: relative;
+    overflow: hidden;
+  }
+}
+
+
+
+/*
+
+.dl-scroller-vertical{
+  display: block;
+  &>*{
+    position: relative;
+    height: 100%;
+    padding: 0px 4px;
+    &:hover{
+      &>.dl-scroller-rail{
+        width: 10px;
+        background-color: #ededed - #111;
+        &>.dl-scroller-dragger{
+          background-color: #a1a1a1;
+        }
+      }
+    }
+    &>.dl-scroller-rail{
+      @extend .duration;
+      position: relative;
+      width: 8px;
+      height: 100%;
+      background-color: #ededed;
+
+      &>.dl-scroller-dragger{
+        cursor: pointer;
+        overflow: hidden;
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        top: 40%;
+        bottom: 40%;
+        border-radius: 5px;
+        &>*{
+          @extend .duration;
+          background-color: #a1a1a1 + #222;
+          width: 100%;
+          height: 100%;
+        }
+        &:active{
+          &>*{
+            background-color: #a1a1a1 - #111;
+          }
+        }
+      }
+    }
+
+  }
+}
+
+*/
+
+
+.modalWin {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  height: 100%;
+  overflow: auto;
+  overflow-x: hidden;
+  &>.box {
+    display: table;
+    min-height: 100%;
+    height: 100%;
+    width: 100%;
+    &>.inner {
+      &>.overlay {
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .modalWinInner {
+        @extend .duration;
+        @extend .scale50;
+        position: relative;
+        margin: auto;
+        width: 100%;
+        max-width: 400px;
+        &>.box {
+          position: relative;
+        }
+        .close {
+          @extend .duration;
+          @extend .no-o;
+          cursor:pointer;
+          z-index: 4;
+          position: absolute;
+          top: 15px;
+          right:15px;
+          color:#989898;
+          font-size: 24px;
+          &:hover {
+            @extend .scale80;
+          }
+        }
+      }
+
+      height: 100%;
+      width: 100%;
+      position: relative;
+      padding: 30px 5px;
+      display: table-cell;
+      vertical-align: middle;
+    }
+  }
+  &.mixShow{
+    z-index: 9999;
+    &>.box .modalWinInner {
+      @extend .scale100;
+    }
+  }
+}
+
+
+
+
+
